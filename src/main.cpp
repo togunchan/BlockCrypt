@@ -8,13 +8,13 @@ int main()
 
     BlockCrypt cipher(key);
 
-    BlockCrypt::Block plaintext = {'H', 'e', 'l', 'l', 'o', 'B', 'l', 'o',
-                                   'c', 'k', 'C', 'r', 'y', 'p', 't', '!'};
+    // BlockCrypt::Block plaintext = {'H', 'e', 'l', 'l', 'o', 'B', 'l', 'o',
+    //                                'c', 'k', 'C', 'r', 'y', 'p', 't', '!'};
 
-    BlockCrypt::Block encrypted = cipher.encrypt(plaintext);
-    BlockCrypt::Block decrypted = cipher.decrypt(encrypted);
+    // BlockCrypt::Block encrypted = cipher.encrypt(plaintext);
+    // BlockCrypt::Block decrypted = cipher.decrypt(encrypted);
 
-    std::cout << "Encryption and decryption completed!" << std::endl;
+    // std::cout << "Encryption and decryption completed!" << std::endl;
 
     return 0;
 }
