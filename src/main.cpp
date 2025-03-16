@@ -8,6 +8,8 @@ int main()
 
     BlockCrypt cipher(key);
 
+    cipher.printRoundKeys();
+
     // BlockCrypt::Block plaintext = {'H', 'e', 'l', 'l', 'o', 'B', 'l', 'o',
     //                                'c', 'k', 'C', 'r', 'y', 'p', 't', '!'};
 
