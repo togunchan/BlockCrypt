@@ -33,7 +33,7 @@ g++ -std=c++17 main.cpp BlockCrypt.cpp BlockCryptConstants.cpp -o output
 
 3. **Run:**
 ```bash
-./aes
+./output
 ```
 
 ## Example Code
