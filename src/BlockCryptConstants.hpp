@@ -4,6 +4,7 @@
 #include <cstdint>
 
 extern const uint8_t sBox[256];
+extern const uint8_t invSBox[256];
 
 extern const uint8_t rcon[10];
 
