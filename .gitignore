@@ -1,1 +1,38 @@
-src/output
+# MacOS metadata
+.DS_Store
+
+# CMake build artifacts
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Catch2 FetchContent build artifacts
+_fetch-content/
+_external/
+_deps/
+
+# Compiled object files and binaries
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.exe
+*.out
+*.a
+*.lib
+
+# VS Code metadata
+.vscode/
+*.code-workspace
+
+# Logs and debug files
+*.log
+*.core
+
+# Unit test output
+Testing/
+CTestTestfile.cmake
+test_blockcrypt

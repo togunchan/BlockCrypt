@@ -1,4 +1,4 @@
-#include "blockcrypt.hpp"
+#include "../include/blockcrypt.hpp"
 #include <iostream>
 #include <iomanip>
 
@@ -50,7 +50,12 @@ void BlockCrypt::keyExpansion(const Key &key)
                 temp[j] = sBox[temp[j]];
             }
 
-            // Rcon ekle
+            // add Rcon
+            if (rconIndex >= sizeof(rcon) / sizeof(rcon[0]))
+            {
+                throw std::runtime_error("Rcon index out of bounds during key expansion!");
+            }
+            std::cout << "Using rcon[" << static_cast<int>(rconIndex) << "] = " << std::hex << static_cast<int>(rcon[rconIndex]) << std::dec << std::endl;
             temp[0] ^= rcon[rconIndex++];
         }
 
@@ -59,7 +64,12 @@ void BlockCrypt::keyExpansion(const Key &key)
         {
             int targetRound = wordIdx / 4;
             int targetPos = (wordIdx % 4) * 4 + j;
-            roundKeys[targetRound][targetPos] = roundKeys[(wordIdx - 4) / 4][((wordIdx - 4) % 4) * 4 + j] ^ temp[j];
+
+            int prevRound = (wordIdx - 4) / 4;
+            int prevPos = ((wordIdx - 4) % 4) * 4 + j;
+
+            roundKeys.at(targetRound).at(targetPos) =
+                roundKeys.at(prevRound).at(prevPos) ^ temp[j];
         }
     }
 }
@@ -84,10 +94,13 @@ void BlockCrypt::subBytes(Block &block) const
     // It replaces each byte in the block with the corresponding value from the S-Box (substitution box),
     // which is a lookup table designed for non-linear transformation and security enhancement.
     // The S-Box introduces confusion, making it harder for attackers to analyze the encryption process.
+    printBlock(block, "Before subBytes");
+
     for (int i = 0; i < BLOCK_SIZE; ++i)
     {
         block[i] = sBox[block[i]];
     }
+    printBlock(block, "After subBytes");
 }
 
 void BlockCrypt::invSubBytes(Block &block) const
@@ -129,7 +142,7 @@ void BlockCrypt::shiftRows(Block &block) const
     // the 3rd row is shifted 2 positions to the left,
     // and the 4th row is shifted 3 positions to the left.
 
-    // printBlock(block, "Before shiftRows");
+    printBlock(block, "Before shiftRows");
 
     uint8_t temp;
 
@@ -155,7 +168,7 @@ void BlockCrypt::shiftRows(Block &block) const
     block[7] = block[3];
     block[3] = temp;
 
-    // printBlock(block, "After shiftRows: ");
+    printBlock(block, "After shiftRows: ");
 }
 
 void BlockCrypt::invShiftRows(Block &block) const
@@ -238,6 +251,7 @@ uint8_t BlockCrypt::gmul(uint8_t a, uint8_t b) const
 void BlockCrypt::mixColumns(Block &block) const
 {
     // This function performs the "MixColumns" step of AES encryption or decryption.
+    printBlock(block, "Before mixColumns");
     for (int i = 0; i < 4; ++i)
     {
         uint8_t s0 = block[i];
@@ -250,6 +264,7 @@ void BlockCrypt::mixColumns(Block &block) const
         block[i + 8] = gmul(s0, 1) ^ gmul(s1, 1) ^ gmul(s2, 2) ^ gmul(s3, 3);
         block[i + 12] = gmul(s0, 3) ^ gmul(s1, 1) ^ gmul(s2, 1) ^ gmul(s3, 2);
     }
+    printBlock(block, "After mixColumns");
 }
 
 void BlockCrypt::invMixColumns(Block &block) const
