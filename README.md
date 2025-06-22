@@ -1,89 +1,244 @@
-# AES-128 Encryption/Decryption Implementation
+# BlockCrypt: AES-128 Encryption & Decryption in C++
 
-A C++ implementation of the AES-128 (Advanced Encryption Standard) algorithm for encrypting and decrypting 128-bit data blocks. This project covers all AES operations, including key expansion, substitution, shifting rows, mixing columns, and adding round keys.
+> A modular, testable, educational C++ implementation of the AES-128 algorithm with CBC mode and PKCS#7 padding.
+
+---
 
 ## Features
-- **Key Expansion**: Generates 11 round keys from a 128-bit cipher key
-- **Encryption**:
-  - `SubBytes`: Non-linear byte substitution using S-Box
-  - `ShiftRows`: Cyclic shifting of rows in the state matrix
-  - `MixColumns`: Column mixing using Galois Field multiplication
-  - `AddRoundKey`: XOR with the round key
-- **Decryption**:
-  - `InvSubBytes`: Inverse substitution using inverse S-Box
-  - `InvShiftRows`: Reverse row shifting
-  - `InvMixColumns`: Inverse column mixing
-- **Galois Field Multiplication**: Optimized for AES operations
-- **Debug Utilities**: Print round keys and block states for analysis
 
-## Prerequisites
-- C++ compiler (e.g., `g++`)
-- Basic understanding of AES concepts
+* AES-128 core encryption and decryption
+* Round key generation (Key Expansion)
+* ECB (single-block) mode
+* CBC (multi-block) mode
+* PKCS#7 padding/unpadding
+* Modular architecture (Block, Key, Padding, CBC logic separated)
+* Extensive unit tests with Catch2
+* Debug output for learning (printBlock, printRoundKeys)
 
-## Installation & Usage
-1. **Clone the repository**:
-```bash
-git clone https://github.com/togunchan/BlockCrypt.git
-cd BlockCrypt
+---
+
+## 📁 Project Structure
+
 ```
-2. **Compile (example with g++):**
-```bash
-g++ -std=c++17 main.cpp BlockCrypt.cpp BlockCryptConstants.cpp -o output
+BlockCrypt/
+├── build/                # CMake build output (ignored in git)
+├── constants/            # AES constants: S-boxes, Rcon values
+│   ├── BlockCryptConstants.cpp
+│   └── BlockCryptConstants.hpp
+├── include/              # Header files
+│   ├── blockcrypt.hpp
+│   ├── CBC.hpp
+│   └── padding.hpp
+├── src/                  # Source files
+│   ├── blockcrypt.cpp
+│   ├── CBC.cpp
+│   ├── padding.cpp
+├── tests/                # Unit tests with Catch2
+│   ├── CMakeLists.txt
+│   └── test_blockcrypt.cpp
+├── third_party/          # External libraries
+├── .gitignore
+├── CMakeLists.txt
+├── LICENSE
+├── main.cpp
+└── README.md
 ```
 
-3. **Run:**
+---
+
+## Build & Run (CMake)
+
+### Prerequisites
+
+* C++17 compatible compiler (e.g. g++, clang++)
+* CMake 3.10 or newer
+
+### Build Project
+
 ```bash
-./output
+cmake -B build
+cmake --build build
 ```
 
-## Example Code
+### Run Executable
+
+```bash
+./build/blockcrypt      # Or your CMake target name
+```
+
+### Run Tests
+
+```bash
+./build/tests           # Runs Catch2 unit tests
+```
+
+---
+
+## Example Usage
+
 ```cpp
 #include "blockcrypt.hpp"
-#include <iostream>
+#include "CBC.hpp"
+#include "padding.hpp"
 
-int main() {
-    // Example key and plaintext (hex values)
-    BlockCrypt::Key key = {
-        0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
-        0xab, 0xf7, 0x97, 0x99, 0x89, 0xcf, 0xab, 0x12
-    };
+int main()
+{
+    BlockCrypt::Key key = { /* 16-byte key */ };
+    BlockCrypt::Block iv = { /* 16-byte IV */ };
+    std::vector<uint8_t> data = {'H', 'e', 'l', 'l', 'o'};
 
-    BlockCrypt::Block plaintext = {
-        0x32, 0x43, 0xf6, 0xa8, 0x88, 0x5a, 0x30, 0x8d,
-        0x31, 0x31, 0x98, 0xa2, 0xe0, 0x37, 0x07, 0x34
-    };
+    BC::encryptCBC(data, key, iv);  // In-place encryption
+    BC::decryptCBC(data, key, iv);  // In-place decryption
 
-    BlockCrypt aes(key);
-    
-    // Encrypt
-    aes.encrypt(plaintext);
-    std::cout << "Encrypted Block:" << std::endl;
-    aes.printBlock(plaintext, "Encrypted");
-
-    // Decrypt
-    aes.decrypt(plaintext);
-    std::cout << "Decrypted Block:" << std::endl;
-    aes.printBlock(plaintext, "Decrypted");
-
-    return 0;
+    std::string decrypted(data.begin(), data.end());
+    std::cout << decrypted << std::endl;
 }
 ```
 
-## Testing
-Tested with custom test vectors. Use the `printRoundKeys()` and `printBlock()` functions to debug intermediate steps and validate the encryption/decryption process.
+---
 
-## References
-References
-- [FIPS 197: AES Standard](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197-upd1.pdf)
-- [AES: The Advanced Encryption Standard](https://engineering.purdue.edu/kak/compsec/NewLectures/Lecture8.pdf)
+## CBC Mode Explained
 
-## License
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+> CBC (Cipher Block Chaining) encrypts multiple blocks securely.
 
-## Notes
-- **Educational Purpose**: This implementation is for learning and educational purposes and is not optimized for production environments.
-- **Extensions**: Can be extended to support AES-192/256 or other modes (e.g., CBC, CTR).
+### Encryption Steps:
 
-## Contact
-Q#uestions? Reach out:  
+1. XOR plaintext block with previous ciphertext block (or IV for first)
+2. Encrypt with AES
+3. Output becomes the "previous" for the next block
+
+### Decryption Steps:
+
+1. AES decrypt the ciphertext block
+2. XOR result with previous ciphertext block (or IV)
+
+---
+
+## Concepts & Internals
+
+### 1. What is AES-128 and how is it implemented here?
+
+AES-128 is a symmetric block cipher with:
+
+* 128-bit block size (16 bytes)
+* 128-bit key (16 bytes)
+* 10 transformation rounds
+
+Implemented here with readable, debug-friendly modular code.
+
+---
+
+### 2. Step-by-step: AES-128 Encryption Flow
+
+| Round | Operations                                              |
+| ----- | ------------------------------------------------------- |
+| 0     | `AddRoundKey` (XOR with key)                            |
+| 1–9   | `SubBytes` → `ShiftRows` → `MixColumns` → `AddRoundKey` |
+| 10    | `SubBytes` → `ShiftRows` → `AddRoundKey`                |
+
+---
+
+### 3. What is Key Expansion?
+
+* Generates 11 keys from the initial 128-bit input key
+* Each round uses a different 16-byte key
+* Uses `RotWord`, `SubWord`, and `Rcon[]`
+* Stored in `roundKeys[0..10]`
+
+---
+
+### 4. What does each AES step do?
+
+| Step        | Purpose                                        |
+| ----------- | ---------------------------------------------- |
+| SubBytes    | Byte substitution (non-linear confusion)       |
+| ShiftRows   | Row-wise permutation (diffusion)               |
+| MixColumns  | Column-wise matrix multiplication over GF(2^8) |
+| AddRoundKey | XOR with round key                             |
+| Inv\*       | Reverse of each above for decryption           |
+
+---
+
+### 5. Galois Field Multiplication in Practice
+
+* AES math uses GF(2^8), not normal integers
+* `gmul(a, b)` uses shift, XOR, and 0x1B reduction
+
+```cpp
+if (a & 0x80) a ^= 0x1B;
+```
+
+Ensures byte values stay inside the field.
+
+---
+
+### 6. How Are Blocks and Keys Managed?
+
+```cpp
+using Block = std::array<uint8_t, 16>;  // 16-byte data
+using Key   = std::array<uint8_t, 16>;  // 16-byte key
+```
+
+Simple, fixed-size types improve safety and clarity.
+
+---
+
+### 7. How to Inspect Internal States?
+
+Use `printBlock()` at any step:
+
+```cpp
+aes.printBlock(state, "After SubBytes");
+```
+
+Each block prints in a 4x4 matrix format.
+
+---
+
+### 8. How Are roundKeys Used?
+
+* `roundKeys[0]`: Pre-round XOR
+* `roundKeys[1..9]`: Main round transformations
+* `roundKeys[10]`: Final round XOR
+
+---
+
+### 9. Educational Design Notes
+
+* Clean code, no premature optimization
+* No lookup tables for GF math
+* Debug printing is integrated
+* Padding and CBC clearly separated from core
+
+---
+
+## Testing Strategy
+
+* ✅ Single encrypt-decrypt cycle (basic test)
+* ✅ All-zero and all-0xFF edge cases
+* ✅ Random 100x100 key/block fuzzing
+* ✅ CBC mode round-trip
+* ✅ PKCS#7 pad/unpad round-trip
+
+Tested with Catch2 (see `test_blockcrypt.cpp`).
+
+---
+
+## 🔗 References
+
+* [FIPS 197: AES Standard](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf)
+* [Wikipedia: AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)
+* [Crypto StackExchange](https://crypto.stackexchange.com)
+
+---
+
+## 🔖 License
+
+MIT License. See [LICENSE](LICENSE).
+
+---
+
+## ✉️ Contact
+
+Questions, feedback, ideas?
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Your_Profile-blue.svg)](https://www.linkedin.com/in/togunchan/)
