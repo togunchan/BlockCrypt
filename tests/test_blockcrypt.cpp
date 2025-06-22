@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch_all.hpp>
 #include "blockcrypt.hpp"
+#include "../include/padding.hpp"
 #include <random>
 
 // ------------ Basic Correctness: Single Round-Trip Test ------------
@@ -131,4 +132,23 @@ TEST_CASE("Random round-trip fuzz", "[fuzz][long]")
             REQUIRE(tmp == blk);
         }
     }
+}
+
+/*
+ * This test verifies the correctness of the PKCS7 padding and unpadding logic.
+ * It starts with a short message ("Hi") and applies PKCS7 padding to reach a 16-byte block size.
+ * After padding, the message size should be exactly 16 bytes.
+ * Then, it removes the padding and checks that the original content is correctly restored,
+ * ensuring both the padding and unpadding processes are symmetric and lossless.
+ */
+TEST_CASE("PKCS7 pad/unpad roundtrip")
+{
+    std::vector<uint8_t> msg = {'H', 'i'};
+    BCPad::addPKCS7(msg);
+    REQUIRE(msg.size() == 16);
+
+    BCPad::removePKCS7(msg);
+    REQUIRE(msg.size() == 2);
+    REQUIRE(msg[0] == 'H');
+    REQUIRE(msg[1] == 'i');
 }
