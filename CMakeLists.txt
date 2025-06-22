@@ -5,9 +5,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
 
 add_library(blockcrypt_lib
-    src/blockcrypt.cpp
     constants/BlockCryptConstants.cpp
+    src/blockcrypt.cpp
     src/padding.cpp
+    src/CBC.cpp
 )
 
 target_include_directories(blockcrypt_lib

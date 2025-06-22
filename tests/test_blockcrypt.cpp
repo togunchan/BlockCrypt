@@ -1,7 +1,8 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch_all.hpp>
 #include "blockcrypt.hpp"
-#include "../include/padding.hpp"
+#include "padding.hpp"
+#include "CBC.hpp"
 #include <random>
 
 // ------------ Basic Correctness: Single Round-Trip Test ------------
@@ -151,4 +152,42 @@ TEST_CASE("PKCS7 pad/unpad roundtrip")
     REQUIRE(msg.size() == 2);
     REQUIRE(msg[0] == 'H');
     REQUIRE(msg[1] == 'i');
+}
+
+/*
+ * CBC round-trip test:
+ *
+ * This unit test verifies the correctness of AES-CBC encryption and decryption
+ * by performing a full round-trip cycle. A short plaintext message ("Hello") is:
+ *
+ *  1. Encrypted using a fixed AES key and IV (16 bytes each),
+ *  2. Then decrypted using the same key and IV,
+ *  3. Finally, the result is compared with the original message.
+ *
+ * The test ensures that:
+ *  - Padding is correctly applied before encryption (PKCS#7),
+ *  - CBC chaining logic preserves data integrity,
+ *  - Padding is correctly removed during decryption,
+ *  - The decrypted output exactly matches the original plaintext.
+ */
+TEST_CASE("CBC round-trip", "[cbc]")
+{
+    BlockCrypt::Key key{
+        0xA1, 0xB2, 0xC3, 0xD4,
+        0xE5, 0xF6, 0x07, 0x18,
+        0x29, 0x3A, 0x4B, 0x5C,
+        0x6D, 0x7E, 0x8F, 0x90};
+
+    BlockCrypt::Block iv{
+        0x10, 0x32, 0x54, 0x76,
+        0x98, 0xBA, 0xDC, 0xFE,
+        0x01, 0x23, 0x45, 0x67,
+        0x89, 0xAB, 0xCD, 0xEF};
+
+    std::vector<uint8_t> msg = {'H', 'e', 'l', 'l', 'o'}; // 5 bytes
+
+    BC::encryptCBC(msg, key, iv);
+    BC::decryptCBC(msg, key, iv);
+
+    REQUIRE(std::string(msg.begin(), msg.end()) == "Hello");
 }
