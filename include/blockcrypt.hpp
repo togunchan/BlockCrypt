@@ -22,6 +22,8 @@ private:
     void keyExpansion(const Key &key);
     void addRoundKey(Block &block, const Key &roundKey) const;
     void printRoundKeys() const;
+    static inline uint8_t &cell(Block &b, int row, int col);
+    static inline uint8_t cell(const Block &b, int row, int col);
     void shiftRows(Block &block) const;
     void subBytes(Block &block) const;
     void mixColumns(Block &block) const;

@@ -30,3 +30,5 @@ enable_testing()
 add_subdirectory(tests)
 add_test(NAME BlockCryptTests COMMAND test_blockcrypt)
 
+add_executable(blockcrypt main.cpp)
+target_link_libraries(blockcrypt PRIVATE blockcrypt_lib)

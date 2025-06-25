@@ -191,3 +191,49 @@ TEST_CASE("CBC round-trip", "[cbc]")
 
     REQUIRE(std::string(msg.begin(), msg.end()) == "Hello");
 }
+
+/*
+ * NIST AES-128 ECB Test Vector
+ *
+ * This test validates the correctness of the `BlockCrypt` class's single-block
+ * encryption functionality by using the official NIST AES-128 ECB test vector.
+ *
+ * Test steps:
+ * 1. Define a fixed 128-bit encryption key.
+ * 2. Specify a known 128-bit plaintext block.
+ * 3. Provide the expected ciphertext output based on NIST documentation.
+ * 4. Encrypt the plaintext block using ECB mode with the given key.
+ * 5. Compare the encryption result with the expected ciphertext.
+ *
+ * Notes:
+ * - This test operates on a single block, which is sufficient to verify
+ *   basic ECB mode functionality.
+ * - If encryption is implemented correctly, the test will pass.
+ */
+
+TEST_CASE("NIST AES-128 ECB vector", "[nist][ecb]")
+{
+    BlockCrypt::Key key = {
+        0x2B, 0x7E, 0x15, 0x16,
+        0x28, 0xAE, 0xD2, 0xA6,
+        0xAB, 0xF7, 0x15, 0x88,
+        0x09, 0xCF, 0x4F, 0x3C};
+
+    BlockCrypt::Block pt = {
+        0x6B, 0xC1, 0xBE, 0xE2,
+        0x2E, 0x40, 0x9F, 0x96,
+        0xE9, 0x3D, 0x7E, 0x11,
+        0x73, 0x93, 0x17, 0x2A};
+
+    BlockCrypt::Block expect = {
+        0x3A, 0xD7, 0x7B, 0xB4,
+        0x0D, 0x7A, 0x36, 0x60,
+        0xA8, 0x9E, 0xCA, 0xF3,
+        0x24, 0x66, 0xEF, 0x97};
+
+    BlockCrypt aes(key);
+    auto ct = pt;
+    aes.encrypt(ct);
+
+    REQUIRE(ct == expect);
+}

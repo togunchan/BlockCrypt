@@ -94,13 +94,13 @@ void BlockCrypt::subBytes(Block &block) const
     // It replaces each byte in the block with the corresponding value from the S-Box (substitution box),
     // which is a lookup table designed for non-linear transformation and security enhancement.
     // The S-Box introduces confusion, making it harder for attackers to analyze the encryption process.
-    printBlock(block, "Before subBytes");
+    // printBlock(block, "Before subBytes");
 
     for (int i = 0; i < BLOCK_SIZE; ++i)
     {
         block[i] = sBox[block[i]];
     }
-    printBlock(block, "After subBytes");
+    // printBlock(block, "After subBytes");
 }
 
 void BlockCrypt::invSubBytes(Block &block) const
@@ -130,6 +130,15 @@ void BlockCrypt::printBlock(Block &block, const std::string &message) const
     std::cout << std::endl;
 }
 
+inline uint8_t & ::BlockCrypt::cell(Block &b, int row, int col)
+{
+    return b[col * 4 + row];
+}
+inline uint8_t BlockCrypt::cell(const Block &b, int row, int col)
+{
+    return b[col * 4 + row];
+}
+
 void BlockCrypt::shiftRows(Block &block) const
 {
     /*  ⎡ S0  S4  S8  S12 ⎤       ⎡ S0   S4   S8   S12 ⎤
@@ -142,65 +151,54 @@ void BlockCrypt::shiftRows(Block &block) const
     // the 3rd row is shifted 2 positions to the left,
     // and the 4th row is shifted 3 positions to the left.
 
-    printBlock(block, "Before shiftRows");
+    // printBlock(block, "Before shiftRows");
 
-    uint8_t temp;
+    // Row-1  (b1  b5  b9  b13) ─rotl1→ (b5  b9  b13 b1)
+    uint8_t temp = cell(block, 1, 0);
+    cell(block, 1, 0) = cell(block, 1, 1);
+    cell(block, 1, 1) = cell(block, 1, 2);
+    cell(block, 1, 2) = cell(block, 1, 3);
+    cell(block, 1, 3) = temp;
 
-    // Second row (index 1, 5, 9, 13)
-    temp = block[1];
-    block[1] = block[5];
-    block[5] = block[9];
-    block[9] = block[13];
-    block[13] = temp;
+    // (b2  b6  b10 b14) ─rotl2→ (b10 b14 b2  b6)
+    std::swap(cell(block, 2, 0), cell(block, 2, 2));
+    std::swap(cell(block, 2, 1), cell(block, 2, 3));
 
-    // Third row (index 2, 6, 10, 14): shift left by 2
-    temp = block[2];
-    block[2] = block[10];
-    block[10] = temp;
-    temp = block[6];
-    block[6] = block[14];
-    block[14] = temp;
+    // (b3  b7  b11 b15) ─rotl3→ (b15 b3  b7  b11)
+    temp = cell(block, 3, 3);
+    cell(block, 3, 3) = cell(block, 3, 2);
+    cell(block, 3, 2) = cell(block, 3, 1);
+    cell(block, 3, 1) = cell(block, 3, 0);
+    cell(block, 3, 0) = temp;
 
-    // Fourth row (index 3, 7, 11, 15): shift left by 3
-    temp = block[15];
-    block[15] = block[11];
-    block[11] = block[7];
-    block[7] = block[3];
-    block[3] = temp;
-
-    printBlock(block, "After shiftRows: ");
+    // printBlock(block, "After shiftRows: ");
 }
 
 void BlockCrypt::invShiftRows(Block &block) const
 {
     /*  ⎡ S0   S4   S8   S12 ⎤       ⎡ S0  S4  S8  S12 ⎤
-        ⎢ S5   S9   S13  S1  ⎥  →    ⎢ S1  S5  S9  S13 ⎥  // 2nd row: shift right by 1
-        ⎢ S10  S14  S2   S6  ⎥       ⎢ S2  S6  S10 S14 ⎥  // 3rd row: shift right by 2
-        ⎣ S15  S3   S7   S11 ⎦       ⎣ S3  S7  S11 S15 ⎦  // 4th row: shift right by 3 */
+        ⎢ S5   S9   S13  S1  ⎥  →    ⎢ S1  S5  S9  S13 ⎥
+        ⎢ S10  S14  S2   S6  ⎥       ⎢ S2  S6  S10 S14 ⎥
+        ⎣ S15  S3   S7   S11 ⎦       ⎣ S3  S7  S11 S15 ⎦
+    */
 
-    uint8_t temp;
+    // (b5  b9  b13 b1) ─rotr1→ (b1  b5  b9  b13)
+    uint8_t temp = cell(block, 1, 3);
+    cell(block, 1, 3) = cell(block, 1, 2);
+    cell(block, 1, 2) = cell(block, 1, 1);
+    cell(block, 1, 1) = cell(block, 1, 0);
+    cell(block, 1, 0) = temp;
 
-    // Second row (index 1, 5, 9, 13): shift right by 1
-    temp = block[13];
-    block[13] = block[9];
-    block[9] = block[5];
-    block[5] = block[1];
-    block[1] = temp;
+    // (b10 b14 b2  b6) ─rotr2→ (b2  b6  b10 b14)
+    std::swap(cell(block, 2, 0), cell(block, 2, 2));
+    std::swap(cell(block, 2, 1), cell(block, 2, 3));
 
-    // Third row (index 2, 6, 10, 14): shift right by 2
-    temp = block[2];
-    block[2] = block[10];
-    block[10] = temp;
-    temp = block[6];
-    block[6] = block[14];
-    block[14] = temp;
-
-    // Fourth row (index 3, 7, 11, 15): shift right by 3
-    temp = block[3];
-    block[3] = block[7];
-    block[7] = block[11];
-    block[11] = block[15];
-    block[15] = temp;
+    // (b15 b3  b7  b11)─rotr3→ (b3  b7  b11 b15)
+    temp = cell(block, 3, 0);
+    cell(block, 3, 0) = cell(block, 3, 1);
+    cell(block, 3, 1) = cell(block, 3, 2);
+    cell(block, 3, 2) = cell(block, 3, 3);
+    cell(block, 3, 3) = temp;
 }
 
 void BlockCrypt::addRoundKey(Block &block, const Key &roundKey) const
@@ -251,37 +249,39 @@ uint8_t BlockCrypt::gmul(uint8_t a, uint8_t b) const
 void BlockCrypt::mixColumns(Block &block) const
 {
     // This function performs the "MixColumns" step of AES encryption or decryption.
-    printBlock(block, "Before mixColumns");
-    for (int i = 0; i < 4; ++i)
+    // printBlock(block, "Before mixColumns");
+    for (int col = 0; col < 4; ++col)
     {
-        uint8_t s0 = block[i];
-        uint8_t s1 = block[i + 4];
-        uint8_t s2 = block[i + 8];
-        uint8_t s3 = block[i + 12];
+        uint8_t s0 = cell(block, 0, col);
+        uint8_t s1 = cell(block, 1, col);
+        uint8_t s2 = cell(block, 2, col);
+        uint8_t s3 = cell(block, 3, col);
 
-        block[i] = gmul(s0, 2) ^ gmul(s1, 3) ^ gmul(s2, 1) ^ gmul(s3, 1);
-        block[i + 4] = gmul(s0, 1) ^ gmul(s1, 2) ^ gmul(s2, 3) ^ gmul(s3, 1);
-        block[i + 8] = gmul(s0, 1) ^ gmul(s1, 1) ^ gmul(s2, 2) ^ gmul(s3, 3);
-        block[i + 12] = gmul(s0, 3) ^ gmul(s1, 1) ^ gmul(s2, 1) ^ gmul(s3, 2);
+        // Apply the MixColumns transformation using the GF(2^8) constants
+
+        cell(block, 0, col) = gmul(s0, 2) ^ gmul(s1, 3) ^ gmul(s2, 1) ^ gmul(s3, 1);
+        cell(block, 1, col) = gmul(s0, 1) ^ gmul(s1, 2) ^ gmul(s2, 3) ^ gmul(s3, 1);
+        cell(block, 2, col) = gmul(s0, 1) ^ gmul(s1, 1) ^ gmul(s2, 2) ^ gmul(s3, 3);
+        cell(block, 3, col) = gmul(s0, 3) ^ gmul(s1, 1) ^ gmul(s2, 1) ^ gmul(s3, 2);
     }
-    printBlock(block, "After mixColumns");
+    // printBlock(block, "After mixColumns");
 }
 
 void BlockCrypt::invMixColumns(Block &block) const
 {
     // This function performs the "InvMixColumns" step of AES decryption.
-    for (int i = 0; i < 4; ++i) // Iterate through each column
+    for (int col = 0; col < 4; ++col) // Iterate through each column
     {
-        uint8_t s0 = block[i];
-        uint8_t s1 = block[i + 4];
-        uint8_t s2 = block[i + 8];
-        uint8_t s3 = block[i + 12];
+        uint8_t s0 = cell(block, 0, col);
+        uint8_t s1 = cell(block, 1, col);
+        uint8_t s2 = cell(block, 2, col);
+        uint8_t s3 = cell(block, 3, col);
 
         // Apply the inverse MixColumns transformation using the GF(2^8) constants
-        block[i] = gmul(s0, 14) ^ gmul(s1, 11) ^ gmul(s2, 13) ^ gmul(s3, 9);
-        block[i + 4] = gmul(s0, 9) ^ gmul(s1, 14) ^ gmul(s2, 11) ^ gmul(s3, 13);
-        block[i + 8] = gmul(s0, 13) ^ gmul(s1, 9) ^ gmul(s2, 14) ^ gmul(s3, 11);
-        block[i + 12] = gmul(s0, 11) ^ gmul(s1, 13) ^ gmul(s2, 9) ^ gmul(s3, 14);
+        cell(block, 0, col) = gmul(s0, 14) ^ gmul(s1, 11) ^ gmul(s2, 13) ^ gmul(s3, 9);
+        cell(block, 1, col) = gmul(s0, 9) ^ gmul(s1, 14) ^ gmul(s2, 11) ^ gmul(s3, 13);
+        cell(block, 2, col) = gmul(s0, 13) ^ gmul(s1, 9) ^ gmul(s2, 14) ^ gmul(s3, 11);
+        cell(block, 3, col) = gmul(s0, 11) ^ gmul(s1, 13) ^ gmul(s2, 9) ^ gmul(s3, 14);
     }
 }
 

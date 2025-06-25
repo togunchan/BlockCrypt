@@ -1,20 +1,39 @@
 #include <iostream>
-#include "include/blockcrypt.hpp"
+#include <vector>
+#include <string>
+#include "blockcrypt.hpp"
+#include "CBC.hpp"
 
-int main(int argc, char const *argv[])
+int main()
 {
-    BlockCrypt::Block plainText = {0x32, 0x88, 0x31, 0xe0, 0x43, 0x5a, 0x31, 0x37, 0xf6, 0x30, 0x98, 0x07, 0xa8, 0x8d, 0xa2, 0x34};
+    BlockCrypt::Key key = {
+        0x2b, 0x7e, 0x15, 0x16,
+        0x28, 0xae, 0xd2, 0xa6,
+        0xab, 0xf7, 0x4d, 0x4d,
+        0x09, 0xcf, 0x4f, 0x3c};
 
-    BlockCrypt::Key key = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x4d, 0x4d, 0x09, 0xcf, 0x4f, 0x3c};
+    BlockCrypt::Block iv = {
+        0x00, 0x01, 0x02, 0x03,
+        0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09, 0x0a, 0x0b,
+        0x0c, 0x0d, 0x0e, 0x0f};
 
-    BlockCrypt aes(key);
-    aes.printBlock(plainText, "Original data: ");
+    std::string message = "Hello, BlockCrypt CBC Mode!";
+    std::vector<uint8_t> data(message.begin(), message.end());
 
-    aes.encrypt(plainText);
-    aes.printBlock(plainText, "Encrypted data: ");
+    std::cout << "[Original Message] " << message << "\n";
 
-    aes.decrypt(plainText);
-    aes.printBlock(plainText, "Decrypted data: ");
+    BC::encryptCBC(data, key, iv);
+
+    std::cout << "[Encrypted Bytes] ";
+    for (auto byte : data)
+        std::cout << std::hex << (int)byte << " ";
+    std::cout << std::dec << "\n";
+
+    BC::decryptCBC(data, key, iv);
+
+    std::string decrypted(data.begin(), data.end());
+    std::cout << "[Decrypted Message] " << decrypted << "\n";
 
     return 0;
 }
