@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstdint>
+#include <string>
 #include "../constants/BlockCryptConstants.hpp"
 
 class BlockCrypt

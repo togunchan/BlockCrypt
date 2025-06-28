@@ -1,5 +1,6 @@
 #include "../include/CBC.hpp"
 #include "../include/padding.hpp"
+#include <algorithm>
 
 namespace BC
 {
