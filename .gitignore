@@ -23,6 +23,7 @@ _deps/
 *.out
 *.a
 *.lib
+*.bin
 
 # VS Code metadata
 .vscode/

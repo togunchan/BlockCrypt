@@ -55,7 +55,7 @@ void BlockCrypt::keyExpansion(const Key &key)
             {
                 throw std::runtime_error("Rcon index out of bounds during key expansion!");
             }
-            std::cout << "Using rcon[" << static_cast<int>(rconIndex) << "] = " << std::hex << static_cast<int>(rcon[rconIndex]) << std::dec << std::endl;
+            // std::cout << "Using rcon[" << static_cast<int>(rconIndex) << "] = " << std::hex << static_cast<int>(rcon[rconIndex]) << std::dec << std::endl;
             temp[0] ^= rcon[rconIndex++];
         }
 
