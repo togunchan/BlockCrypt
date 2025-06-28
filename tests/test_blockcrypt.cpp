@@ -237,3 +237,56 @@ TEST_CASE("NIST AES-128 ECB vector", "[nist][ecb]")
 
     REQUIRE(ct == expect);
 }
+
+// helper to turn a hex string into a BlockCrypt::Block
+static std::vector<uint8_t> hexBytes(const std::string &hex)
+{
+    std::vector<uint8_t> v(hex.size() / 2);
+    for (size_t i = 0; i < v.size(); ++i)
+    {
+        unsigned int byte;
+        std::sscanf(hex.substr(2 * i, 2).c_str(), "%02x", &byte);
+        v[i] = static_cast<uint8_t>(byte);
+    }
+    return v;
+}
+
+TEST_CASE("NIST AES-128 CBC vector", "[nist][cbc]")
+{
+    using BC::decryptCBC;
+    using BC::encryptCBC;
+
+    // 1) Key
+    BlockCrypt::Key key = {
+        0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6,
+        0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C};
+
+    // 2) IV
+    auto ivBytes = hexBytes("000102030405060708090A0B0C0D0E0F");
+    BlockCrypt::Block iv;
+    std::copy_n(ivBytes.begin(), 16, iv.begin());
+
+    // 3) Plaintext (concatenate the four blocks)
+    auto ptHex =
+        "6BC1BEE22E409F96E93D7E117393172A"
+        "AE2D8A571E03AC9C9EB76FAC45AF8E51"
+        "30C81C46A35CE411E5FBC1191A0A52EF"
+        "F69F2445DF4F9B17AD2B417BE66C3710";
+    auto plaintext = hexBytes(ptHex);
+
+    // 4) Expected ciphertext
+    auto ctHex =
+        "7649ABAC8119B246CEE98E9B12E9197D"
+        "5086CB9B507219EE95DB113A917678B2"
+        "73BED6B8E3C1743B7116E69E22229516"
+        "3FF1CAA1681FAC09120ECA307586E1A7";
+    auto expected = hexBytes(ctHex);
+
+    // 5) Encrypt in-place
+    encryptCBC(plaintext, key, iv, false);
+    REQUIRE(plaintext == expected);
+
+    // 6) Decrypt back in-place
+    decryptCBC(plaintext, key, iv, false);
+    REQUIRE(plaintext == hexBytes(ptHex));
+}

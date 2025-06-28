@@ -12,7 +12,7 @@ namespace BC
      * @param key The symmetric encryption key used by AES.
      * @param iv The initialization vector used to seed the first block in CBC mode.
      */
-    void encryptCBC(std::vector<uint8_t> &data, const BlockCrypt::Key &key, const BlockCrypt::Block &iv);
+    void encryptCBC(std::vector<uint8_t> &data, const BlockCrypt::Key &key, const BlockCrypt::Block &iv, bool pad = true);
 
     /**
      * Decrypts CBC-mode AES ciphertext and removes PKCS#7 padding.
@@ -21,5 +21,5 @@ namespace BC
      * @param key The symmetric AES key that was used to encrypt the original message.
      * @param iv The initialization vector used during encryption. Required for correct decryption of the first block.
      */
-    void decryptCBC(std::vector<uint8_t> &data, const BlockCrypt::Key &key, const BlockCrypt::Block &iv);
+    void decryptCBC(std::vector<uint8_t> &data, const BlockCrypt::Key &key, const BlockCrypt::Block &iv, bool pad = true);
 } // namespace BC (BlockCrypt)

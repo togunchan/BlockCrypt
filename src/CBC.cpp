@@ -3,11 +3,12 @@
 
 namespace BC
 {
-    void encryptCBC(std::vector<uint8_t> &buf, const BlockCrypt::Key &key, const BlockCrypt::Block &iv)
+    void encryptCBC(std::vector<uint8_t> &buf, const BlockCrypt::Key &key, const BlockCrypt::Block &iv, bool pad)
     {
         BlockCrypt aes(key);
         BlockCrypt::Block prev = iv;
-        BCPad::addPKCS7(buf);
+        if (pad)
+            BCPad::addPKCS7(buf);
 
         for (std::size_t i = 0; i < buf.size(); i += 16)
         {
@@ -25,7 +26,7 @@ namespace BC
         }
     }
 
-    void decryptCBC(std::vector<uint8_t> &data, const BlockCrypt::Key &key, const BlockCrypt::Block &iv)
+    void decryptCBC(std::vector<uint8_t> &data, const BlockCrypt::Key &key, const BlockCrypt::Block &iv, bool pad)
     {
         BlockCrypt aes(key);
         BlockCrypt::Block prev = iv;
@@ -45,6 +46,7 @@ namespace BC
             std::copy(temp.begin(), temp.end(), data.begin() + i);
             prev = block;
         }
-        BCPad::removePKCS7(data);
+        if (pad)
+            BCPad::removePKCS7(data);
     }
 }
