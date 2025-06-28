@@ -2,6 +2,8 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <cstring>   // for std::strcmp
+#include <algorithm> // for std::copy_n
 #include "blockcrypt.hpp"
 #include "CBC.hpp"
 
