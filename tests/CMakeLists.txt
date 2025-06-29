@@ -12,3 +12,16 @@ target_link_libraries(test_blockcrypt
 # target_link_options(BlockCryptTests PRIVATE -fno-sanitize=address)
 
 add_test(NAME BlockCryptTests COMMAND test_blockcrypt)
+
+# --- Benchmark executable ---
+add_executable(benchmark_performance benchmark_performance.cpp)
+target_link_libraries(benchmark_performance
+    PRIVATE
+      blockcrypt_lib
+      Catch2::Catch2WithMain
+)
+
+# Register benchmark with CTest
+add_test(NAME Benchmarks
+         COMMAND benchmark_performance -b)
+set_tests_properties(Benchmarks PROPERTIES LABELS "benchmark")

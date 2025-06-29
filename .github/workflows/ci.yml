@@ -22,5 +22,8 @@ jobs:
       - name: Build
         run: cmake --build build -- -j$(nproc)
 
-      - name: Run tests
-        run: ctest --test-dir build --output-on-failure
+      - name: Run unit tests (exclude benchmarks)
+        run: ctest --test-dir build --output-on-failure -E Benchmarks
+
+      - name: Run benchmarks only
+        run: ctest --test-dir build --output-on-failure -R Benchmarks
