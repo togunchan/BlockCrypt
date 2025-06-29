@@ -26,5 +26,8 @@ add_test(NAME Benchmarks
          COMMAND benchmark_performance -b)
 set_tests_properties(Benchmarks PROPERTIES LABELS "benchmark")
 
-add_test(NAME LatencyBenchmarks COMMAND benchmark_performance -b "[latency]")
-add_test(NAME ThroughputBenchmarks COMMAND benchmark_performance -b "[throughput]")
+add_test(NAME ECBLatencyBenchmark COMMAND benchmark_performance -b "[ecb][latency]")
+add_test(NAME ECBThroughputBenchmark COMMAND benchmark_performance -b "[ecb][throughput]")
+
+add_test(NAME CBCLatencyBenchmark COMMAND benchmark_performance -b "[cbc][latency]")
+add_test(NAME CBCThroughputBenchmark COMMAND benchmark_performance -b "[cbc][throughput]")

@@ -28,8 +28,14 @@ jobs:
       # - name: Run benchmarks only
       #   run: ctest --test-dir build --output-on-failure -R Benchmarks
 
-      - name: Run latency benchmarks
-        run: ctest --test-dir build --output-on-failure -R LatencyBenchmarks
+      - name: Run ECB latency benchmark
+        run: ctest --test-dir build --output-on-failure -R ECBLatencyBenchmark
 
-      - name: Run throughput benchmarks
-        run: ctest --test-dir build --output-on-failure -R ThroughputBenchmarks
+      - name: Run ECB throughput benchmark
+        run: ctest --test-dir build --output-on-failure -R ECBThroughputBenchmark
+
+      - name: Run CBC latency benchmark
+        run: ctest --test-dir build --output-on-failure -R CBCLatencyBenchmark
+
+      - name: Run CBC throughput benchmark
+        run: ctest --test-dir build --output-on-failure -R CBCThroughputBenchmark
