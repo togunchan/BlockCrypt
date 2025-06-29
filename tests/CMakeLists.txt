@@ -25,3 +25,6 @@ target_link_libraries(benchmark_performance
 add_test(NAME Benchmarks
          COMMAND benchmark_performance -b)
 set_tests_properties(Benchmarks PROPERTIES LABELS "benchmark")
+
+add_test(NAME LatencyBenchmarks COMMAND benchmark_performance -b "[latency]")
+add_test(NAME ThroughputBenchmarks COMMAND benchmark_performance -b "[throughput]")

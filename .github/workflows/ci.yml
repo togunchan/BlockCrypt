@@ -25,5 +25,11 @@ jobs:
       - name: Run unit tests (exclude benchmarks)
         run: ctest --test-dir build --output-on-failure -E Benchmarks
 
-      - name: Run benchmarks only
-        run: ctest --test-dir build --output-on-failure -R Benchmarks
+      # - name: Run benchmarks only
+      #   run: ctest --test-dir build --output-on-failure -R Benchmarks
+
+      - name: Run latency benchmarks
+        run: ctest --test-dir build --output-on-failure -R LatencyBenchmarks
+
+      - name: Run throughput benchmarks
+        run: ctest --test-dir build --output-on-failure -R ThroughputBenchmarks
