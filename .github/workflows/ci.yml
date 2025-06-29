@@ -23,7 +23,8 @@ jobs:
         run: cmake --build build -- -j$(nproc)
 
       - name: Run unit tests (exclude benchmarks)
-        run: ctest --test-dir build --output-on-failure -E Benchmarks
+        run: ctest --test-dir build --output-on-failure -E "Benchmarks|ECBLatencyBenchmark|ECBThroughputBenchmark|CBCLatencyBenchmark|CBCThroughputBenchmark"
+
 
       # - name: Run benchmarks only
       #   run: ctest --test-dir build --output-on-failure -R Benchmarks
